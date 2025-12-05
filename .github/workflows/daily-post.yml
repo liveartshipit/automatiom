@@ -1,9 +1,9 @@
-name: 🚀 Daily 4-5 Para AI Articles + Manual Trigger
+name: 🚀 AI 4-Para → Pexels → WP Auto Post
 
 on:
   schedule:
-    - cron: '0 13 * * *'  # Daily at 1 PM UTC
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 13 * * *'  # Daily 1PM UTC
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -11,18 +11,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: 🐍 Setup Python 3.12
+    - name: 🐍 Python 3.12
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        
-    - name: 📦 Install requests library
+    
+    - name: 📦 Install requests
       run: pip install requests
     
-    - name: 🎯 Generate & Publish AI Article with Images
+    - name: 🎯 AI → Image → WP LIVE
       env:
-        WP_USERNAME: ${{ secrets.WP_USERNAME }}
-        WP_PASSWORD: ${{ secrets.WP_PASSWORD }}
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        DEAPI_KEY: ${{ secrets.DEAPI_KEY }}  # Optional for images
+        WP_USER: ${{ secrets.WP_USER }}
+        WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+        GROQ_KEY: ${{ secrets.GROQ_KEY }}
+        PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
       run: python auto_post.py
