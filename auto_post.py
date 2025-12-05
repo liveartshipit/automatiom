@@ -103,7 +103,7 @@ wp_data = {
     'title': title,
     'content': content_html,
     'status': 'publish',
-    'tags': ['AI', 'Automation', 'Productivity']
+    
 }
 
 # SSL FIX: verify=False for your site
