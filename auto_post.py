@@ -96,7 +96,7 @@ content_html = f"""
 <figure class="wp-block-image size-large">
 <img src="{featured_img}" alt="{title}" style="width:100%;height:auto;display:block;margin:0 auto 20px;">
 </figure>
-{content.replace('\n', '<br><br>')}
+{re.sub(r'[*`#_=>\[\]()]+', '', content).strip()}
 """
 
 wp_data = {
