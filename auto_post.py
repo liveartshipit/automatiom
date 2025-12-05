@@ -1,150 +1,129 @@
 #!/usr/bin/env python3
 """
-🚀 FIXED: AI 4-PARA → PEXELS → WP w/ PROPER GROQ PAYLOAD
+🚀 YOUR WORKING METHOD + 4 PARA + PEXELS + FEATURED IMAGE
+Uses llama-3.1-8b-instant (ACTIVE) + Basic Auth
 """
 
-import os
 import requests
+import base64
+import os
 import json
 import re
 from datetime import datetime
 from urllib.parse import quote
 
-SITE_URL = "https://softwareinnovationlabs.gamer.gd"
-WP_USERNAME = os.getenv('WP_USER')
-WP_PASSWORD = os.getenv('WP_APP_PASS')
-GROQ_API_KEY = os.getenv('GROQ_KEY')
-PEXELS_API_KEY = os.getenv('PEXELS_KEY')
+print("🚀=== DAILY 4-PARA AI → PEXELS → WP w/ FEATURED ===")
 
-print("🚀=== BULLETPROOF AI PIPELINE ===")
+# YOUR SECRETS (working)
+groq_key = os.getenv('GROQ_KEY')
+wp_site = os.getenv('WP_SITE') or 'https://softwareinnovationlabs.gamer.gd'
+wp_user = os.getenv('WP_USER')
+wp_app_pass = os.getenv('WP_APP_PASS')
+pexels_key = os.getenv('PEXELS_KEY')
 
-def get_ai_topic():
-    """✅ SAFE topic generation"""
-    print("✨ AI topic...")
-    payload = {
-        "model": "llama-3.1-70b-versatile",  # ✅ FIXED MODEL
-        "messages": [
-            {"role": "user", "content": "Generate ONE catchy blog title (8-12 words) about 2025 AI automation/productivity. Just the title."}
-        ],
-        "temperature": 0.8,
-        "max_tokens": 60  # ✅ SHORTENED
-    }
-    
-    headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-    
-    try:
-        r = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers, timeout=20)
-        print(f"Debug: Status {r.status_code}")
-        if r.status_code != 200:
-            print(f"❌ Groq Error: {r.text}")
-            raise Exception("API failed")
-        topic = r.json()['choices'][0]['message']['content'].strip()
-        topic = re.sub(r'[#*`-]+', '', topic).strip()[:80]
-        print(f"✅ Topic: '{topic}'")
-        return topic
-    except:
-        print("🔄 Fallback topic")
-        return "5 AI Tools That 10x Your Daily Productivity"
+if not all([groq_key, wp_user, wp_app_pass]):
+    print("❌ Missing: GROQ_KEY, WP_USER, WP_APP_PASS")
+    exit(1)
 
-def groq_4_paras(topic):
-    """✅ FIXED 4-para generation"""
-    print("🤖 4-para article...")
-    payload = {
-        "model": "llama-3.1-70b-versatile",  # ✅ PROVEN MODEL
-        "messages": [
-            {"role": "user", "content": f"""Write EXACTLY 4 paragraphs about: {topic}
+print(f"✅ Site: {wp_site}")
 
-Para1: Hook + problem (120 words)
-Para2: Solution 1 + example (120 words)  
-Para3: Solution 2 + proof (120 words)
-Para4: Conclusion + CTA (120 words)
+# === 1. AI TOPIC (Your working model) ===
+print("✨ AI topic...")
+groq_url = 'https://api.groq.com/openai/v1/chat/completions'
+groq_headers = {'Authorization': f'Bearer {groq_key}', 'Content-Type': 'application/json'}
 
-Tech blog style ONLY."""}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 700  # ✅ REDUCED from 900
-    }
-    
-    headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-    
-    r = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers, timeout=30)
-    print(f"Debug: Status {r.status_code}")
-    
-    if r.status_code != 200:
-        print(f"❌ FULL ERROR: {r.text}")
-        raise Exception(f"Groq failed: {r.status_code}")
-    
-    return r.json()['choices'][0]['message']['content'].strip()
+groq_data = {
+    'model': 'llama-3.1-8b-instant',  # ✅ YOUR WORKING MODEL
+    'messages': [{'role': 'user', 'content': 'Generate ONE catchy 8-12 word blog title about AI automation/productivity tools. Just title.'}],
+    'max_tokens': 60,
+    'temperature': 0.7
+}
 
-def get_and_upload_image(topic):
-    """Pexels → WP Media Library"""
-    print("🖼️ Image pipeline...")
-    
-    # Pexels
-    headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": topic[:50], "per_page": 1, "orientation": "landscape"}
-    r = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params)
-    
-    img_url = (r.json()['photos'][0]['src']['large2x'] if r.status_code == 200 and r.json()['photos'] 
-               else f"https://source.unsplash.com/1200x675/?{quote(topic[:30])}")
-    
-    # Download
-    img_data = requests.get(img_url).content
-    
-    # WP Media Upload
-    wp_auth = (WP_USERNAME, WP_PASSWORD)
-    files = {'file': ('featured.jpg', img_data, 'image/jpeg')}
-    
-    r_media = requests.post(
-        f"{SITE_URL}/wp-json/wp/v2/media",
-        auth=wp_auth,
-        files=files
-    )
-    
-    if r_media.status_code in [200, 201]:
-        media_id = r_media.json()['id']
-        print(f"✅ Media ID: {media_id}")
-        return media_id
-    print(f"⚠️ Media failed, using external: {img_url}")
-    return None
+r_topic = requests.post(groq_url, headers=groq_headers, json=groq_data, timeout=20)
+if r_topic.status_code != 200:
+    print("🔄 Fallback topic")
+    topic = "5 AI Tools That 10x Developer Productivity"
+else:
+    topic = r_topic.json()['choices'][0]['message']['content'].strip()
+    topic = re.sub(r'[#*`-]+', '', topic)[:80]
 
-def create_wp_post(title, content, media_id=None):
-    """✅ WP Post w/ Featured Image"""
-    auth = (WP_USERNAME, WP_PASSWORD)
-    slug = re.sub(r'[^a-z0-9]+', '-', title.lower())[:50]
-    
-    post_data = {
-        "title": title,
-        "content": content,
-        "status": "publish",
-        "slug": slug,
-        "tags": ["AI", "Automation", "Productivity"]
-    }
-    if media_id:
-        post_data["featured_media"] = media_id
-    
-    r = requests.post(f"{SITE_URL}/wp-json/wp/v2/posts", json=post_data, auth=auth)
-    
-    if r.status_code in [200, 201]:
-        post = r.json()
-        print(f"🎉 LIVE: {SITE_URL}/?p={post['id']}")
-        return True
-    print(f"❌ WP: {r.status_code} - {r.text[:100]}")
-    return False
+print(f"✅ Topic: '{topic}'")
 
-# === MAIN ===
-try:
-    topic = get_ai_topic()
-    title = f"🚀 {topic}"
-    print(f"\n📝 {title}")
-    
-    article = groq_4_paras(topic)
-    media_id = get_and_upload_image(topic)
-    success = create_wp_post(title, article, media_id)
-    
-    print("🎊 COMPLETE!" if success else "❌ FAILED")
-    exit(0 if success else 1)
+# === 2. AI 4-PARA ARTICLE (Your working model) ===
+print("🤖 4-para article...")
+groq_data = {
+    'model': 'llama-3.1-8b-instant',  # ✅ WORKING
+    'messages': [{'role': 'user', 'content': f"""Write EXACTLY 4 short paragraphs about: {topic}
 
-except Exception as e:
-    print(f"💥 {e}")
+Para1: Problem + hook
+Para2: Solution 1 + example  
+Para3: Solution 2 + proof
+Para4: Conclusion + CTA"""}],
+    'max_tokens': 600,
+    'temperature': 0.3
+}
+
+r_article = requests.post(groq_url, headers=groq_headers, json=groq_data, timeout=30)
+r_article.raise_for_status()
+content = r_article.json()['choices'][0]['message']['content'].strip()
+print("✅ Article ready!")
+
+# === 3. PEXELS IMAGE + WP MEDIA UPLOAD ===
+print("🖼️ Pexels → WP Media...")
+pexels_headers = {"Authorization": pexels_key}
+pexels_params = {"query": topic, "per_page": 1, "orientation": "landscape"}
+r_pexels = requests.get("https://api.pexels.com/v1/search", headers=pexels_headers, params=pexels_params)
+
+if r_pexels.status_code == 200 and r_pexels.json()['photos']:
+    img_url = r_pexels.json()['photos'][0]['src']['large2x']
+else:
+    img_url = f"https://source.unsplash.com/1200x675/?{quote(topic[:30])}"
+
+# Download image
+img_data = requests.get(img_url).content
+
+# WP Basic Auth (YOUR WORKING METHOD)
+token = base64.b64encode(f'{wp_user}:{wp_app_pass}'.encode()).decode()
+wp_headers = {
+    'Authorization': f'Basic {token}',
+    'Content-Disposition': 'attachment; filename="featured.jpg"',
+    'Content-Type': 'image/jpeg'
+}
+
+# UPLOAD to WP Media
+media_url = f"{wp_site.rstrip('/')}/wp-json/wp/v2/media"
+r_media = requests.post(media_url, headers=wp_headers, data=img_data, timeout=40)
+
+featured_id = None
+if r_media.status_code in [200, 201]:
+    featured_id = r_media.json()['id']
+    print(f"✅ Featured Image ID: {featured_id}")
+else:
+    print("⚠️ Using external image")
+
+# === 4. WP POST (YOUR WORKING METHOD) ===
+print("📤 WordPress post...")
+posts_url = f"{wp_site.rstrip('/')}/wp-json/wp/v2/posts"
+title = f"🚀 {topic} - AI Insights"
+
+wp_data = {
+    'title': title,
+    'content': f'<figure class="wp-block-image size-large"><img src="" alt="{title}" class="wp-image-{featured_id}" style="width:100%;height:auto;"></figure><br>{content.replace("\n", "<br>")}',
+    'status': 'publish',
+    'tags': ['AI', 'Automation', 'Productivity']
+}
+
+if featured_id:
+    wp_data['featured_media'] = featured_id
+
+r_wp = requests.post(posts_url, headers=wp_headers, json=wp_data, timeout=60)
+
+if r_wp.status_code == 201:
+    post = r_wp.json()
+    print(f"🎉 LIVE: {post['link']}")
+    print(f"🆔 ID: {post['id']}")
+    print("✅ DAILY 4-PARA POST COMPLETE!")
+    exit(0)
+else:
+    print(f"❌ WP ERROR: {r_wp.status_code} - {r_wp.text[:200]}")
     exit(1)
