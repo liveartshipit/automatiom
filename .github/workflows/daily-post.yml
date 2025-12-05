@@ -1,12 +1,14 @@
-name: 🚀 Daily AI WordPress Posts
+name: 🚀 Daily 4-5 Para AI Articles + Manual Trigger
+
 on:
   schedule:
-    - cron: '0 10 * * *'  # Daily 10AM UTC (5:30PM IST)
-  workflow_dispatch:     # Manual test button
+    - cron: '0 12 * * *'  # 📅 12PM UTC = 5:30PM IST DAILY
+  workflow_dispatch:     # 🔘 MANUAL TRIGGER BUTTON
 
 jobs:
-  ai-post:
+  publish-article:
     runs-on: ubuntu-latest
+    
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
@@ -16,12 +18,13 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: 📦 Install requests
+    - name: 📦 Install requests library
       run: pip install requests
 
-    - name: 🎯 Run AI WordPress Poster
+    - name: 🎯 Generate & Publish AI Article with Images
       env:
         GROQ_KEY: ${{ secrets.GROQ_KEY }}
+        PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
         WP_SITE: ${{ secrets.WP_SITE }}
         WP_USER: ${{ secrets.WP_USER }}
         WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
