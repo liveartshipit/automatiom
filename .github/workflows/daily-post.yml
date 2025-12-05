@@ -2,30 +2,27 @@ name: 🚀 Daily 4-5 Para AI Articles + Manual Trigger
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # 📅 12PM UTC = 5:30PM IST DAILY
-  workflow_dispatch:     # 🔘 MANUAL TRIGGER BUTTON
+    - cron: '0 13 * * *'  # Daily at 1 PM UTC
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  publish-article:
+  publish:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-
+    - uses: actions/checkout@v4
+    
     - name: 🐍 Setup Python 3.12
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-
+        
     - name: 📦 Install requests library
       run: pip install requests
-
+    
     - name: 🎯 Generate & Publish AI Article with Images
       env:
-        GROQ_KEY: ${{ secrets.GROQ_KEY }}
-        PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
-        WP_SITE: ${{ secrets.WP_SITE }}
-        WP_USER: ${{ secrets.WP_USER }}
-        WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+        WP_USERNAME: ${{ secrets.WP_USERNAME }}
+        WP_PASSWORD: ${{ secrets.WP_PASSWORD }}
+        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        DEAPI_KEY: ${{ secrets.DEAPI_KEY }}  # Optional for images
       run: python auto_post.py
