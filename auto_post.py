@@ -50,12 +50,12 @@ print(f"✅ Topic: '{topic}'")
 print("🤖 4-para article...")
 groq_data = {
     'model': 'llama-3.1-8b-instant',
-    'messages': [{'role': 'user', 'content': f"""Write EXACTLY 4 short paragraphs about: {topic}
-
-Para1: Problem + hook
-Para2: Solution 1 + example  
+    'messages': [{'role': 'user', 'content': f"""Write EXACTLY 4 short paragraphs about 100 words : {topic} copyright free  
+story narrative like talking to friend , emojis , easy language , beginner friendly 
+Para1: Problem + hook 
+Para2: Solution 1 + example  highlight new trending tools and much more 
 Para3: Solution 2 + proof
-Para4: Conclusion + CTA"""}],
+Para4: Conclusion + CTA Time: date at the end"""}],
     'max_tokens': 600,
     'temperature': 0.3
 }
